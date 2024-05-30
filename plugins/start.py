@@ -9,19 +9,13 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, IMDB_API_KEY
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT,
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
-# Configure logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-logger = logging.getLogger(__name__)
 
-app = Bot("imdb_bot")
 
-@app.on_message(filters.command('start') & filters.private & subscribed)
+@Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
     id = message.from_user.id
     if not await present_user(id):
@@ -201,45 +195,3 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await asyncio.sleep(8)
         await msg.delete()
 
-@app.on_message(filters.command("imdb"))
-async def imdb(client: Client, message: Message):
-    if len(message.command) < 2:
-        await message.reply_text('Please provide a movie name.')
-        return
-
-    movie_name = ' '.join(message.command[1:])
-    search_url = f"https://imdb-api.com/en/API/SearchMovie/{IMDB_API_KEY}/{movie_name}"
-    search_response = requests.get(search_url).json()
-
-    if search_response['results']:
-        movie = search_response['results'][0]
-        movie_id = movie['id']
-        movie_title = movie['title']
-        movie_year = movie['description'].strip('()')
-        movie_image = movie.get('image', None)
-
-        details_url = f"https://imdb-api.com/en/API/Title/{IMDB_API_KEY}/{movie_id}"
-        details_response = requests.get(details_url).json()
-
-        if 'imDbRating' in details_response:
-            rating = details_response['imDbRating']
-            genres = details_response.get('genres', 'N/A')
-            plot = details_response.get('plot', 'Plot not available')
-
-            message_text = (
-                f"🏷 *Title:* {movie_title}\n"
-                f"🎭 *Genres:* {genres}\n"
-                f"📆 *Year:* {movie_year}\n"
-                f"🌟 *Rating:* {rating}\n\n"
-                f"📕 *Story:* {plot}"
-            )
-
-            if movie_image:
-                await message.reply_photo(photo=movie_image, caption=message_text, parse_mode=ParseMode.MARKDOWN)
-            else:
-                await message.reply_text(message_text, parse_mode=ParseMode.MARKDOWN)
-        else:
-            await message.reply_text(f"Could not find IMDb rating for {movie_title}.")
-    else:
-        await message.reply_text(f"Could not find any movie named '{movie_name}'.")
-    
