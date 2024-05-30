@@ -7,7 +7,8 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-
+#IMDb 
+IMDB_API_KEY = ''
 
 #Bot token @Botfather
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7060558357:AAE2qAHq_KfDygVSvaAgxOAn7bGOAZcxXF0")
