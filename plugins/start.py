@@ -243,7 +243,4 @@ async def imdb(client: Client, message: Message):
             await message.reply_text(f"Could not find IMDb rating for {movie_title}.")
     else:
         await message.reply_text(f"Could not find any movie named '{movie_name}'.")
-
-# Start the bot
-app.run()
     
